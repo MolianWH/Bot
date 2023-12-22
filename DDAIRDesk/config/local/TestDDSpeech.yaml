@@ -1,0 +1,16 @@
+﻿DDSound:
+  chunk: 1024 # Record in chunks of 1024 samples
+  channels: 1 # 声道数
+  sample_rate: 16000 # 采样率
+  device_name: 麦克风 (NVIDIA Broadcast) # 麦克风 (Realtek High Definition Au
+
+DDSpeech:
+ printSound: 0 # 是否开启打印音量 1-打印 0-不打印
+ save_cache: 0 # 是否保存音频缓存
+ startV: 4000  # 音量大于此值，则开始录音      # 600
+ endV: 4000  # 音量小于此值一段时间，则停止录音  # 1000
+ recordMin: 1.2  # 最短录音时长，小于此值，不记录声音
+ recordMax: 10  # 最长录音时长，大于此值，停止记录
+ recordGap: 1.2  # 允许录音中不说话的时长，必须小于最短录音时长
+ ttsDecoder: "faster-whisper"  # 选择whisper或wenet
+ model:  "../thirdparty/faster_whisper_medium"  # medium

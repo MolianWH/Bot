@@ -1,0 +1,15 @@
+# DDFaceFit
+opencv-python==4.5.4.60
+mediapipe==0.8.10.1
+tables
+
+# DDAudioFace
+pyaudio
+scipy
+### 手动下载Torchvision 0.12.0
+
+# 共用
+numpy==1.23.0
+yacs
+pylivelinkface
+### 手动下载pytorch 1.11.0完整版，包含pyaudio

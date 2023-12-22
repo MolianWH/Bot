@@ -1,0 +1,22 @@
+# urllib3 protubuf版本很重要，其他包安装完检查一下是否顶替掉了版本
+urllib3==1.26.15
+protobuf==3.20.0
+zhon
+loguru
+opencv-python
+edge-tts
+pydub
+websocket
+websocket-client
+xpinyin
+pandas==1.1.5
+pyaudio
+pylivelinkface
+tensorflow-gpu==2.8.0
+wmi
+pyyaml
+pycryptodome
+ffmpeg-python  # 注意正确包名，易与ffmpeg python-ffmpeg混淆
+faster_whisper
+zhconv
+tables

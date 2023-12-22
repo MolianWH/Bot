@@ -1,0 +1,10 @@
+# 模糊音配置
+fuzziness: {
+          "xiao di": "小D",
+          "jia ba": "甲板",
+          "jia ban": "甲板",
+          "qi xing": "骑行",
+          "dao you": "导游",
+          "lv shi": "律诗"
+          # 添加其他同音词和对应的目标词语
+          }

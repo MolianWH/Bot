@@ -1,0 +1,16 @@
+DDTTS:
+  voice: "zh-CN-YunxiaNeural"
+  rate: "+10%"
+  volume: "+0%"
+DDFGAudioFace:
+  model_path: "../plugins/MetaHuman/models/fg_audio_face/ddfg_audioface_model.pb"  # 模型路径
+  standby_dir: "../plugins/MetaHuman/models/fg_audio_face/exp"            # 待机动画（*.h5）目录
+  sequence_path: "../plugins/MetaHuman/models/fg_audio_face/sequence.h5"  # 说话时眨眼摇头动画路径
+  nchannels: 1          # 2
+  rate: 16000           #22050
+  cpu_thread: 2
+  cpu_frames: 20
+  standby_duration: 10  # 待机时长超过该值则播放动画。单位秒
+  fps: 45
+  ending_duration: 5    # 闭嘴动作持续帧数
+  waiting_error: 0.1    # 语音播放延时误差

@@ -1,0 +1,40 @@
+﻿DDChat:
+  prompt: "{question}"
+  model_name: "ChatChat"
+  ChatChat:
+    model: "sensenova-api"
+    api_base_url: "http://172.27.1.199:7861"
+    knowledge_base_id: "jingzhang"
+    top_k: 2
+    score_threshold: 1.0
+    temperature: 0.7  #采样温度，控制输出的随机性，取值范围(0.0,1.0]，默认值为 0.95。值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+    max_request_attempts: 3
+    max_history_turn: 3
+  ZhiPu:
+    model: "chatglm_pro"  # chatglm_pro
+    api_key: "cfe3a2d677ffd8396f6485b3d9d2c10a.r1WphSQXCzxFYuyd"
+    incremental: True
+    temperature: 0.7  #采样温度，控制输出的随机性，取值范围(0.0,1.0]，默认值为 0.95。值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+    top_p: 0.7
+  Spark:
+    appid: "94e8f228"
+    api_key: "ea630ce7564a3653fc8985efb3d222ca"
+    api_secret: "MjBhNTVkNzY3ZTI3ZDljZTY2MGJhYjRh"
+    Spark_url: "ws://spark-api.xf-yun.com/v2.1/chat"
+    domain: "generalv2"  # spark2对应"generalv2"，v1.5对应 "general
+    temperature: 0.7  #采样温度，控制输出的随机性，取值范围(0.0,1.0]，默认值为 0.95。值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+    top_p: 0.7
+    max_new_tokens: 2048
+  Sensenova:
+    model: "nova-ptc-xl-v1"  # "nova-ptc-xs-v1"
+    url: "https://api.sensenova.cn/v1/llm/chat-completions"
+    api_key: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIyVjhnN2dCbEh6M0E0T3RwaVV4NGVjYXBzd1YiLCJleHAiOjE4MDE2OTQyMjMwNTksIm5iZiI6MTY5NDIyMzA1NH0.gSFo3HQPOWjNP9y-jPapUad7i0UkDD9G9WPfC27XChM" # your api_secret_key
+    temperature: 0.7  #采样温度，控制输出的随机性，取值范围(0.0,1.0]，默认值为 0.95。值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+    top_p: 0.7
+    max_new_tokens: 2048
+    max_request_attempts: 3
+    max_history_turn: 3
+  OpenAI:
+    model: "gpt-3.5-turbo"
+    url: "https://api.chatanywhere.com.cn/v1"
+    api_key: "sk-RxwQaFq77SNyO96DGvGA0nyb3mOfqPk9gPw0aKWhNM71ZCbb"

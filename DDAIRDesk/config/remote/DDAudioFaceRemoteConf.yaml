@@ -1,0 +1,38 @@
+﻿DDChatBot:
+  # ============通信=============
+  tcp_server:
+    addr: [ "0.0.0.0",8004 ]  # 本机ip，负责给UE发送chat对话信息
+    conn_num: 10
+  livelink:
+    addr: [ "172.14.4.34",11111 ]  # UE端ip，负责发送bs信息
+    name: "BotA"
+    fps: 45
+    filter_size: 3
+
+  # ===========文本==============
+  sensitive:  "../config/local/SensitiveVoc.yaml"   # 忽略模糊词、敏感词
+  fuzziness: "../config/local/Fuzziness.yaml"   # 模糊词配置文件
+  standby_text: "../config/local/StandbyText.yaml"  # 待机语音配置文件路径
+  greet_audio_wake_up: "我在，有什么我可以帮助您的吗？"  # 呼唤詹公后，詹公的回复
+  greet_face_wake_up: "您好{}！欢迎来到北京甲板智慧科技有限公司! 我是虚拟助手小D。有什么我可以帮助您的吗？我可以给您介绍甲板简介、讲解业务场景。"  # 人脸唤醒
+  greet_guide: "您好{}！快来交互区域加入我们的聊天吧！"  # 引导交互
+  bye_text: ["再见！欢迎下次与小D再次对话。"]
+  wake_words: ["小D小D"]
+
+  # ============时间============
+  standby_audio_interval: 15  # 待机语音间隔
+  close_interaction_time: 10  # 人脸消失多久关闭交互
+  greets_interval_time: 5   # 识别到人脸后多久没交互，开始介绍公司
+  gaze_frame_threshold: 15  # 人在区域内多久打招呼
+  region: [[148, 446],[361, 449],[380, 560],[128, 556]]
+
+  # ============cache============
+  cache:
+    use_cache: True
+    path: "cache/"
+    cache_prob: 0.9  # 使用缓存的概率
+    host: "172.28.4.98"
+    password: "dreamdeck"
+    port: 6379
+    db: 10
+

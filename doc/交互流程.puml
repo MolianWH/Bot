@@ -1,0 +1,32 @@
+﻿@startuml
+'https://plantuml.com/activity-diagram-beta
+
+start
+if (人脸检测状态值) then (有人脸/ON)
+    if (第一次检测到人脸) then (True)
+        :打招呼;
+    endif
+
+    if (有无声音?) then (有)
+        :线下交互;
+    else (无)
+        :抖音抓包;
+    if (有无抓包消息?) then (有)
+        if (线下交互时长) then (超过阈值)
+            :抖音交互;
+        else (没有超过阈值)
+        endif
+    else (无)
+    endif
+    endif
+else (无人脸/OFF)
+    :抖音抓包;
+    if (有无抓包消息?) then (有)
+        :抖音交互;
+    else (无)
+        :待机语音;
+    endif
+endif
+stop
+
+@enduml

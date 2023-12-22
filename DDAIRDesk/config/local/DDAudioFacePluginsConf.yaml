@@ -1,0 +1,98 @@
+﻿DDCamera:
+  type: webcam
+  index: "0"  # " "D:\\Documents\\Data\\dance\\yoyo.mp4"
+  width: 640
+
+DDSound:
+  chunk: 1024 # Record in chunks of 1024 samples
+  channels: 1 # 声道数
+  sample_rate: 16000 # 采样率
+  device_name: 远程音频 # 麦克风 (Realtek High Definition Au
+
+DDHumanPoseRtmPose:
+  det_model: "../thirdparty/RTMPose/rtmpose-trt/rtmdet-nano"
+  pose_model: "../thirdparty/RTMPose/rtmpose-trt/rtmpose-s"
+  device: "cuda"
+
+DDSpeech:
+ printSound: 0 # 是否开启打印音量 1-打印 0-不打印
+ save_cache: 0 # 是否保存音频缓存
+ startV: 2000  # 音量大于此值，则开始录音      # 600
+ endV: 2000  # 音量小于此值一段时间，则停止录音  # 1000
+ recordMin: 1.2  # 最短录音时长，小于此值，不记录声音
+ recordMax: 10  # 最长录音时长，大于此值，停止记录
+ recordGap: 1.1  # 允许录音中不说话的时长，必须小于最短录音时长
+ ttsDecoder: "faster-whisper"  # 选择whisper或wenet
+ model:  "D:/Documents/Code/Face/DDJZBot-v5.0/DDAIRDesk/thirdparty/faster_whisper_medium"  # medium
+ mode: 0   # 0-麦克风模式；1-讯飞语音板模式
+ no_speech_threshold0: 0.7   # no-speech概率大于threshold时，返回空数据
+ no_speech_threshold1: 0.7  # 1-讯飞语音板模式时才会用到此值，进一步过滤非正常语音
+
+DDTTS:
+  voice: "onyx"  # "zh-CN-YunxiaNeural"
+  rate: "+10%"
+  volume: "+0%"
+  model: "openai-tts-1"  # openai-tts-1  "edge-tts"
+  url: "https://aigptx.top/v1/audio/speech"
+  api-key: "Bearer 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"
+
+DDChat:
+  prompt: "{question}"
+  model_name: "ChatChat"
+  ChatChat:
+    model: "sensenova-api"
+    api_base_url: "http://172.27.1.101:7861"
+    knowledge_base_id: "dreamdeck"
+    top_k: 2
+    score_threshold: 1.0
+    temperature: 0.7  #采样温度，控制输出的随机性，取值范围(0.0,1.0]，默认值为 0.95。值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+    max_request_attempts: 3
+    max_history_turn: 5  # 最大历史轮数
+    prompt_name: "gaofei"
+  ZhiPu:
+    model: "chatglm_pro"  # chatglm_pro
+    api_key: "cfe3a2d677ffd8396f6485b3d9d2c10a.r1WphSQXCzxFYuyd"
+    incremental: True
+    temperature: 0.7  #采样温度，控制输出的随机性，取值范围(0.0,1.0]，默认值为 0.95。值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+    top_p: 0.7
+  Spark:
+    appid: "94e8f228"
+    api_key: "ea630ce7564a3653fc8985efb3d222ca"
+    api_secret: "MjBhNTVkNzY3ZTI3ZDljZTY2MGJhYjRh"
+    Spark_url: "ws://spark-api.xf-yun.com/v2.1/chat"
+    domain: "generalv2"  # spark2对应"generalv2"，v1.5对应 "general
+    temperature: 0.7  #采样温度，控制输出的随机性，取值范围(0.0,1.0]，默认值为 0.95。值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+    top_p: 0.7
+    max_new_tokens: 2048
+  Sensenova:
+    model: "nova-ptc-xl-v1"  # "nova-ptc-xs-v1"
+    url: "https://api.sensenova.cn/v1/llm/chat-completions"
+    api_key: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIyVjhnN2dCbEh6M0E0T3RwaVV4NGVjYXBzd1YiLCJleHAiOjE4MDE2OTQyMjMwNTksIm5iZiI6MTY5NDIyMzA1NH0.gSFo3HQPOWjNP9y-jPapUad7i0UkDD9G9WPfC27XChM" # your api_secret_key
+    temperature: 0.7  #采样温度，控制输出的随机性，取值范围(0.0,1.0]，默认值为 0.95。值越大，会使输出更随机，更具创造性；值越小，输出会更加稳定或确定。建议您根据应用场景调整 top_p 或 temperature 参数，但不要同时调整两个参数
+    top_p: 0.7
+    max_new_tokens: 2048
+    max_request_attempts: 3
+    max_history_turn: 2  # 最大历史轮数
+  OpenAI:
+    model: "gpt-3.5-turbo"
+    url: "https://api.chatanywhere.com.cn/v1"
+    api_key: "sk-RxwQaFq77SNyO96DGvGA0nyb3mOfqPk9gPw0aKWhNM71ZCbb"
+
+DDFGAudioFace:
+  model_path: "../plugins/MetaHuman/models/fg_audio_face/ddfg_audioface_model.pb"  # 模型路径
+  standby_dir: "../plugins/MetaHuman/models/fg_audio_face/exp"            # 待机动画（*.h5）目录
+  sequence_path: "../plugins/MetaHuman/models/fg_audio_face/sequence.h5"  # 说话时眨眼摇头动画路径
+  nchannels: 1          # 2
+  rate: 16000           # 22050
+  cpu_thread: 2
+  cpu_frames: 20
+  standby_duration: 10  # 待机时长超过该值则播放动画。单位秒
+  fps: 45
+  ending_duration: 5    # 闭嘴动作持续帧数
+  waiting_error: 0.1    # 语音播放延时误差
+  auto_play: True  # 是否自动播放音频
+
+DDFaceRecognition:
+  threshold: 1.24
+  face_db: "../face_db"
+  gpu_id: 0
