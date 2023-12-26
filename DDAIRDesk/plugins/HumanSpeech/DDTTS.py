@@ -88,11 +88,11 @@ class DDTTS(DDBasePlugin):
     def voice(self, voice):
         self._voice = voice
 
-    def __call__(self, in_data):
+    def __call__(self, in_data, voice=''):
         msg = in_data
         try:
             # return asyncio.run(self.tts(msg))
-            result = self.loop.run_until_complete(self.tts(msg))
+            result = self.loop.run_until_complete(self.tts(msg, voice))
             return result
         except Exception as e:
             print("TTS 异步打断出现异常:", e)

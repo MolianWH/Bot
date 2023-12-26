@@ -99,7 +99,7 @@ class DDChatBot(DDBasePlugin):
         self.default_role = "BotA"
         self.has_greet = False  # 是否是刚打完招呼
         if self.cache_cfg.use_cache:
-            # self._cache = diskcache.Cache(self.cache_path)
+            # self._cache = diskcache.Cache(self.cache_cfg.path)   # diskcache
             self._cache = redis.Redis(host=self.cache_cfg.host,
                                       password=self.cache_cfg.password,
                                       port=self.cache_cfg.port,
@@ -114,7 +114,7 @@ class DDChatBot(DDBasePlugin):
         self.DDCamera = plugins_dict['DDCamera']
         self.DDSpeech = plugins_dict["DDSpeech"]  # ASR
         self.DDChat = plugins_dict['DDChat']
-        self.DDTTS_BotA = plugins_dict['DDTTS']
+        self.DDTTS = plugins_dict['DDTTS']
         self.DDFGAudioFace = plugins_dict['DDFGAudioFace']
         self.DDFaceRecognition = plugins_dict['DDFaceRecognition']
         self.DDHumanPose = plugins_dict['DDHumanPose']
@@ -132,9 +132,6 @@ class DDChatBot(DDBasePlugin):
         self.q_chat_txt.put({"role": self.default_role,
                              "asr": "power_on",
                              "content": "智能助手小D已连接！"})  # 开机语音
-        self.q_chat_txt.put({"role": self.default_role,
-                             "asr": "power_on",
-                             "content": "<Finish>"})
         # 模型加载
         self.DDSpeech.load_model()
         self.DDFGAudioFace.load_model()
@@ -203,12 +200,12 @@ class DDChatBot(DDBasePlugin):
         self.event_play.clear()
 
         self.DDChat.stop = True
-        self.DDTTS_BotA.stop = True
+        self.DDTTS.stop = True
         self.DDFGAudioFace.stop = True  # 用于打断待机动画
         self.bots_chat_stop = True  # 打断两个机器人聊天
         # 清空所有队列数据
         self.DDChat.event_over.wait()
-        self.DDTTS_BotA.event_over.wait()
+        self.DDTTS.event_over.wait()
         self.q_asr_txt.queue.clear()
         self.q_chat_txt.queue.clear()
         self.q_tts_wav.queue.clear()  # 使用内置clear方法清空效率更高
@@ -230,9 +227,6 @@ class DDChatBot(DDBasePlugin):
         self.q_chat_txt.put({"role": self.default_role,
                              "asr": "face_goodbye",
                              "content": random_bye})
-        self.q_chat_txt.put({"role": self.default_role,
-                             "asr": "face_goodbye",
-                             "content": "<Finish>"})
 
     def run_introduce(self):
         """
@@ -253,9 +247,6 @@ class DDChatBot(DDBasePlugin):
             if self.bots_chat_stop:
                 break
             time.sleep(0.5)
-        self.q_chat_txt.put({"role": role,
-                             "asr": "dd_introduce",
-                             "content": "<Finish>"})
 
     def run_guide(self, name, group):
         """
@@ -272,9 +263,6 @@ class DDChatBot(DDBasePlugin):
                "content": content}
         self.set_interrupt()
         self.q_chat_txt.put(msg)
-        self.q_chat_txt.put({"role": self.default_role,
-                             "asr": "dd_guide",
-                             "content": "<Finish>"})
         self.DDChat.clear_history()
         self.DDChat.add_history(role='assistant', content=content)
 
@@ -293,7 +281,6 @@ class DDChatBot(DDBasePlugin):
         sentences = re.split(pattern, content)
         # 去除空白字符（例如空格）
         sentences = [sentence.strip() for sentence in sentences]
-        sentences.append("<Finish>")
         for i, sentence in enumerate(sentences, 1):
             msg = {"role": self.default_role,
                    "asr": "greet_face",
@@ -424,9 +411,6 @@ class DDChatBot(DDBasePlugin):
                     self.q_chat_txt.put({"role": self.default_role,
                                          "asr": "sensitive_voc",
                                          "content": "为了维护友善和尊重的社交环境，请不要在问题中使用包含敏感词汇的内容。感谢您的合作和理解！"})
-                    self.q_chat_txt.put({"role": self.default_role,
-                                         "asr": "sensitive_voc",
-                                         "content": "<Finish>"})
                 else:
                     print_colored(f"asr_output:{output['res']}", DDFont.GREEN)
                     self.has_greet = False  # 已经识别到用户问题了，不必再5秒内介绍
@@ -436,7 +420,6 @@ class DDChatBot(DDBasePlugin):
                     # 打断之后再向队列放数据
                     if res["label"] != "q_asr":
                         self.q_chat_txt.put({"role": self.default_role, "asr": res["label"], "content": res["txt"]})
-                        self.q_chat_txt.put({"role": self.default_role, "asr": res["label"], "content": "<Finish>"})
                     else:
                         self.q_asr_txt.put({"role": "User", "content": res["txt"]})
 
@@ -445,130 +428,88 @@ class DDChatBot(DDBasePlugin):
         chatGLM LangChain txt to txt, question to answer
         """
         while True:
+            # 初始化
             self.DDChat.event_over.set()
             self.event_play.wait()
             asr_input = self.q_asr_txt.get()
             asr_input = asr_input.get("content", "")
             self.last_speech_time = time.time()
             question_id = consistent_hash(asr_input)  # 生成问题的唯一ID，不随程序生命周期变化而变化，MD5
+            response_list = []
             b_time = time.time()
             # TODO: 对问题筛选
-            # 配置文件配置”使用缓存“，随机缓存概率小于阈值，进入缓存搜索
+
+            # 读缓存：配置文件配置”使用缓存“，随机缓存概率小于阈值，进入缓存搜索
             prob = random()
             if self.cache_cfg.use_cache and prob < self.cache_cfg.cache_prob:
                 cached_data = self._cache.get(f"qa:{question_id}")  # 查询缓存
                 # 问题已经存在缓存中
                 if cached_data:
-                    audio_key = f"audio_files_{self.DDTTS_BotA.voice}"   # 缓存中音频的键
                     data = json.loads(cached_data)
-                    # chat和音频缓存中都有
-                    if data.get(audio_key) is not None:
-                        logger.info("使用缓存回复，更新缓存命中次数。")
-                        data["hit_count"] += 1
-                        self._cache.set(f"qa:{question_id}", json.dumps(data, ensure_ascii=False))  # 更新命中次数
-                        # 获取chat和tts直接发给bs管线
-                        for i in range(len(data[audio_key])):
-                            with open(data[audio_key][i], 'rb') as file:
-                                wav_stream = file.read()
-                                self.q_tts_wav.put({"role": data['role'],
-                                                    "content": data["answer"][i],
-                                                    "wav_stream": wav_stream})
-                        continue
-                    else:  # 缓存中有chat内容，但是音频没有，需要重新生成音频
-                        logger.info("使用缓存文本，重新生成音频。")
-                        for i in range(len(data["answer"])):
-                            self.q_chat_txt.put({"role": self.default_role,
-                                                 "asr": asr_input,
-                                                 "content": data["answer"][i]})
+                    logger.info("使用缓存回复，更新缓存命中次数。")
+                    data["hit_count"] += 1
+                    self._cache.set(f"qa:{question_id}", json.dumps(data, ensure_ascii=False))  # 更新命中次数
+                    # 获取chat发给tts管线
+                    for i in range(len(data["answer"])):
+                        self.q_chat_txt.put({"role": self.default_role,
+                                             "asr": asr_input,
+                                             "content": data["answer"][i]})
+                    continue
 
             # 生成新的回复
             logger.info(f"GLM准备回答(prob：{prob})：")
             chat_ans = self.DDChat(asr_input)
             for ans in chat_ans:
-                ans = re.sub(r'{}|{}|{}|{}|{}|{}'.format('回答：', '回答:', '<幽默>', '小D：', '<自然>', '小D:'), "",
-                             ans)
-                logger.info("Chat: " + ans + "(T:{:.2f})".format(time.time() - b_time))
-                # print(ans+"(T:{:.2f})".format(time.time()-b_time), end='')
-                self.q_chat_txt.put({"role": self.default_role,
-                                     "asr": asr_input,
-                                     "content": ans})
-                b_time = time.time()
+                if ans != '<Finish>':
+                    ans = re.sub(r'{}|{}|{}|{}|{}|{}'.format('回答：', '回答:', '<幽默>', '小D：', '<自然>', '小D:'), "",
+                                 ans)
+                    logger.info("Chat: " + ans + "(T:{:.2f})".format(time.time() - b_time))
+                    self.q_chat_txt.put({"role": self.default_role,
+                                         "asr": asr_input,
+                                         "content": ans})
+                    response_list.append(ans)
+                    b_time = time.time()
+                #  写缓存
+                if ans == '<Finish>' and self.cache_cfg.use_cache and \
+                        "我刚刚在网络的世界里走丢了，再问我一个问题试试看吧。" not in response_list:  # 缓存完整答案
+                    cache_data = {
+                        "question": asr_input,
+                        "role": self.default_role,
+                        "answer": response_list,
+                        "hit_count": 1  # 初始命中次数1
+                    }
+                    self._cache.set(f"qa:{question_id}", json.dumps(cache_data, ensure_ascii=False))
+                    logger.info("缓存已写入")
 
     def task_tts(self):
-        full_wav_list = []
-        response_list = []
         while True:
             # 初始化
             time.sleep(0.01)
-            self.DDTTS_BotA.event_over.set()
+            self.DDTTS.event_over.set()
             self.event_play.wait()
             chat_info = self.q_chat_txt.get()
             self.last_speech_time = time.time()
             role = chat_info["role"]  # 角色名
             msg = chat_info["content"]  # 对话内容
-            question = chat_info["asr"]
-            question_id = consistent_hash(question)  # 对应的ASR
             btime_tts = time.time()
 
-            if msg != '<Finish>':
-                wav_dir = f"{self.cache_cfg.path}/{self.DDTTS_BotA.voice}"
-                os.makedirs(wav_dir, exist_ok=True)
-                filename = f"{wav_dir}/{consistent_hash(msg)}.wav"
-                # 保存文件
-                if not os.path.exists(filename):
-                    # 推理
-                    wav_stream = self.DDTTS_BotA(msg)
-                    with open(filename, 'wb') as file:
-                        file.write(wav_stream)
-                # 使用缓存音频文件
-                else:
-                    with open(filename, 'rb') as file:
-                        wav_stream = file.read()
-                # 数据流传给bs
-                if wav_stream != b'':
-                    self.q_tts_wav.put({"role": role, "content": msg, "wav_stream": wav_stream})
-                    print_colored(f"TTS:{msg}, Time:{(time.time() - btime_tts):.2f}", DDFont.BLUE)
-                # 完整对话列表中添加分句
-                full_wav_list.append(filename)
-                response_list.append(msg)
-            else:  # 完整对话结束，完整对话音频写缓存
-                if self.is_write_cache(question, response_list):
-                    cached_data = self._cache.get(f"qa:{question_id}")  # 查询缓存
-                    # 缓存中没有问题。
-                    if not cached_data:  # 写缓存
-
-                        cache_data = {
-                            "question": question,
-                            "role": role,
-                            "answer": response_list,
-                            f"audio_files_{self.DDTTS_BotA.voice}": full_wav_list,  # 此时音频为空，留在TTS中缓存改写
-                            "hit_count": 1  # 初始命中次数1
-                        }
-                        self._cache.set(f"qa:{question_id}", json.dumps(cache_data, ensure_ascii=False))
-                        logger.info("缓存已写入")
-                    # 之前缓存过，更新缓存
-                    else:
-                        data = json.loads(cached_data)
-                        data["hit_count"] += 1
-                        data["answer"] = response_list  # 有可能是问题不变，答案需要更新
-                        data[f"audio_files_{self.DDTTS_BotA.voice}"] = full_wav_list
-                        logger.info("缓存已更新")
-                # 清空完整对话列表
-                full_wav_list = []
-                response_list = []
-
-    def is_write_cache(self, question, response_list):
-        """
-        判断是否需要写缓存
-        Returns:
-
-        """
-        if (question not in ['wake_up', 'greet_face', 'dd_guide', 'dd_introduce',
-                             'face_goodbye', 'power_on',"sensitive_voc"]) and \
-                self.cache_cfg.use_cache and \
-                "我刚刚在网络的世界里走丢了，再问我一个问题试试看吧。" not in response_list:
-            return True
-        return False
+            wav_dir = f"{self.cache_cfg.path}/{self.DDTTS.voice}"
+            os.makedirs(wav_dir, exist_ok=True)
+            filename = f"{wav_dir}/{consistent_hash(msg)}.wav"
+            # 保存文件
+            if not os.path.exists(filename):
+                # 推理
+                wav_stream = self.DDTTS(msg)
+                with open(filename, 'wb') as file:
+                    file.write(wav_stream)
+            # 使用缓存音频文件
+            else:
+                with open(filename, 'rb') as file:
+                    wav_stream = file.read()
+            # 数据流传给bs
+            if wav_stream != b'':
+                self.q_tts_wav.put({"role": role, "content": msg, "wav_stream": wav_stream})
+                print_colored(f"TTS:{msg}, Time:{(time.time() - btime_tts):.2f}", DDFont.BLUE)
 
     def task_audio_face(self):
         """

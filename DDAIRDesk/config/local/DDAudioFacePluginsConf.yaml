@@ -23,7 +23,7 @@ DDSpeech:
  recordMax: 10  # 最长录音时长，大于此值，停止记录
  recordGap: 1.1  # 允许录音中不说话的时长，必须小于最短录音时长
  ttsDecoder: "faster-whisper"  # 选择whisper或wenet
- model:  "D:/Documents/Code/Face/DDJZBot-v5.0/DDAIRDesk/thirdparty/faster_whisper_medium"  # medium
+ model:  "D:/Documents/Model/whisper/faster_whisper_medium"  # medium
  mode: 0   # 0-麦克风模式；1-讯飞语音板模式
  no_speech_threshold0: 0.7   # no-speech概率大于threshold时，返回空数据
  no_speech_threshold1: 0.7  # 1-讯飞语音板模式时才会用到此值，进一步过滤非正常语音
